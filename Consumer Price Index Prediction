@@ -1,0 +1,91 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+plt.rcParams['figure.figsize']=10,10
+%matplotlib inline
+Training_data = pd.read_csv(r"C:\Users\BijayNayak\Desktop\Bigdata\Tutorial\Challenge\challenge_dataSet_attachments\Training_data.xls")
+#print(Training_data.head())
+print(Training_data.info())
+print(Training_data.columns)
+#print(Training_data.describe())
+print(Training_data.shape)
+Training_data= Training_data.drop(columns=['ID','Sector','Year','Month'])
+print(Training_data.info())
+Training_data.describe()
+#print(Training_data.isnull().sum()/100)
+print(Training_data['Housing'].isnull().sum()/100)
+#(say 0.01–0.5% of our data). Percent is just a rule of thumb.
+Training_data=Training_data.dropna()
+#print(Training_data.info())
+print(Training_data.shape)
+
+sns.pairplot(Training_data, x_vars=['Meat and fish','Egg','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants', 'Clothing','Footwear','Clothing and footwear','Housing','Fuel and light','Household goods and services', 'Health', 'Transport and communication','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index'], y_vars='Cereals and products',height=7, aspect=0.7, kind='scatter')
+plt.show()
+sns.pairplot(Training_data)
+plt.figure(figsize = (16,10))
+sns.heatmap(Training_data.corr(),annot = True)
+print(Training_data.shape)
+#split the data set for the prediction 
+# Putting feature variable to X
+X = Training_data[['Meat and fish','Egg','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants', 'Clothing','Footwear','Clothing and footwear','Housing','Fuel and light','Household goods and services', 'Health', 'Transport and communication','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index']]
+
+# Putting response variable to y
+y=Training_data['Cereals and products']
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.7 , random_state=1)
+lm =LinearRegression()
+lm.fit(X_train,y_train)
+print(lm.intercept_)
+coeff_df = pd.DataFrame(lm.coef_,X_test.columns,columns=['Coefficient'])
+coeff_df
+#Predictions
+y_pred = lm.predict(X_test)
+    #Calculating Error Terms
+    from sklearn.metrics import mean_squared_error, r2_score
+    mse = mean_squared_error(y_test, y_pred)
+    r_squared = r2_score(y_test, y_pred)
+
+    print('Mean_Squared_Error :' ,mse)
+    print('r_square_value :',r_squared)
+    #testing for the P:value 
+import statsmodels.api as sm
+X_train_sm = X_train
+X_train_sm=sm.add_constant(X_train_sm)
+lm_1 = sm.OLS(y_train,X_train_sm).fit()
+lm_1.params
+print(lm_1.summary())
+#New Data set after removing the multicollinearity 
+X_train_new= X_train[['Meat and fish','Egg','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants','Housing','Household goods and services', 'Health','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index']]
+#Removed Egg
+#X_train_new= X_train[['Meat and fish','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants','Housing','Household goods and services', 'Health','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index']]
+X_test_new= X_test[['Meat and fish','Egg','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants','Housing','Household goods and services', 'Health','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index']]
+
+lm.fit(X_train_new,y_train)
+y_pred_new = lm.predict(X_test_new)
+from sklearn.metrics import mean_squared_error, r2_score
+mse = mean_squared_error(y_test, y_pred_new)
+r_squared = r2_score(y_test, y_pred_new)
+
+print('Mean_Squared_Error :' ,mse)
+print('r_square_value :',r_squared)
+#Actual vs Predicted
+c = [i for i in range(1,31,1)]
+fig = plt.figure()
+plt.plot(c,y_test, color="blue", linewidth=2.5, linestyle="-")
+plt.plot(c,y_pred_new, color="red",  linewidth=2.5, linestyle="-")
+fig.suptitle('Actual and Predicted', fontsize=20)              # Plot heading 
+plt.xlabel('Index', fontsize=18)                               # X-label
+plt.ylabel('Cereals and products', fontsize=16)   
+sample_test_data= pd.read_csv(r"C:\Users\BijayNayak\Desktop\Bigdata\Tutorial\Challenge\challenge_dataSet_attachments\Test_data.xls")
+#sample_test_data.info()
+print(sample_test_data.isnull().sum()/100)
+sample_test_data=sample_test_data.dropna()
+sample_test_data_new=sample_test_data[['Meat and fish','Egg','Milk and products','Oils and fats','Fruits','Vegetables', 'Pulses and products', 'Sugar and Confectionery','Spices','Non-alcoholic beverages','Prepared meals, snacks, sweets etc.','Food and beverages','Pan, tobacco and intoxicants','Housing','Household goods and services', 'Health','Recreation and amusement','Education','Personal care and effects','Miscellaneous', 'General index']]
+sample_test_data_new.info()
+y_test_new= lm.predict(sample_test_data_new)
+y_test_new
+np.round(y_test_new,2)
